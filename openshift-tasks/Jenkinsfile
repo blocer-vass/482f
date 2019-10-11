@@ -85,7 +85,7 @@ podTemplate(
 		sh """
 			${mvnCmd} deploy \
 			-DskipTests=true \
-			-DaltDeploymentRepository=https://nexus3-registry.gpte-hw-cicd.svc.cluster.local:5000/repository/releases
+			-DaltDeploymentRepository=nexus::default::http://nexus3-gpte-hw-cicd.apps.na311.openshift.opentlc.com/repository/releases
 		"""
       }
 
