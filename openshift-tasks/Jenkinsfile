@@ -37,6 +37,15 @@ podTemplate(
       // Set the tag for the production image: version
       def prodTag = version
 
+      //projects
+      def devProject=GUID+'-tasks-dev'
+      def prodProject=GUID+'-tasks-prod'
+
+      //application's dates
+      def app='tasks'
+      def appWar='openshift-tasks.war'
+ 
+
       // Using Maven build the war file
       // Do not run tests in this step
 	stage('Build war') {
@@ -94,6 +103,12 @@ podTemplate(
         echo "Building OpenShift container image tasks:${devTag}"
 
         // TBD: Build Image, tag Image
+	openshift.withCluster(){
+		openshift.withProject(devProject){
+			openshift.selector('bc',app).startBuild('--from-file=target/'+appWar, "--wait=true")
+        		openshift.tag(app+':latest', app+':'+devTag)
+		}
+	}
       }
 
       // Deploy the built image to the Development Environment.
@@ -103,6 +118,26 @@ podTemplate(
         // TBD: Deploy to development Project
         //      Set Image, Set VERSION
         //      Make sure the application is running and ready before proceeding
+	
+	openshift.withCluster(){
+		openshift.withProject(devProject){
+			//Set image & version
+			openshift.set('image', 'dc/'+app, app+'=image-registry.openshift-image-registry.svc:5000/'+devProject+'/'+app+':'+devTag)
+			//deploy the image
+			openshift.selector('dc',app).rollout().latest()
+			//control the application is running
+			dc=openshift.selector('dc',app).object()
+			dc_version = dc.status.latestVersion
+			rc = openshift.selector('rc', app+'-${dc_version}').object()
+				
+			echo "Waiting for ReplicationController ${app}-${dc_version} to be ready"
+			while (rc.spec.replicas != rc.status.readyReplicas) {
+				sleep 5
+  				rc = openshift.selector('rc', app+'-${dc_version}').object()
+  			}
+			
+		}
+	}
       }
 
       // Copy Image to Nexus container registry
