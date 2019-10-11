@@ -83,7 +83,7 @@ podTemplate(
 
         	// TBD: Publish to Nexus
 		sh """
-			sh "${mvnCmd} deploy \
+			${mvnCmd} deploy \
 			-DskipTests=true \
 			-DaltDeploymentRepository=https://nexus3-registry.gpte-hw-cicd.svc.cluster.local:5000/repository/releases
 		"""
