@@ -48,7 +48,7 @@ print 'PRODTAG: ' + prodTag
         	echo "Building version ${devTag}"
 
         	sh """
-			${mvnCmd} clean packages -DskipTest=true
+			${mvnCmd} clean package -DskipTest=true
 		"""
 	}
 
