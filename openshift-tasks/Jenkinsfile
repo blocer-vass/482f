@@ -37,11 +37,6 @@ podTemplate(
       // Set the tag for the production image: version
       def prodTag = version
 
-//###########################################################
-print 'DEVTAG: ' + devTag 
-print 'PRODTAG: ' + prodTag
-//###########################################################
-
       // Using Maven build the war file
       // Do not run tests in this step
 	stage('Build war') {
@@ -53,7 +48,7 @@ print 'PRODTAG: ' + prodTag
 	}
 
       // TBD: The next two stages should run in parallel
-	parallel (
+      parallel (
 	runingTest: {
       		// Using Maven run the unit tests
       		stage('Unit Tests') {
@@ -80,13 +75,18 @@ print 'PRODTAG: ' + prodTag
 				-Dsonar.projectVersion=${devTag}
 			"""
       		}
-	})
+      })
 
       // Publish the built war file to Nexus
       stage('Publish to Nexus') {
-        echo "Publish to Nexus"
+        	echo "Publish to Nexus"
 
-        // TBD: Publish to Nexus
+        	// TBD: Publish to Nexus
+		sh """
+			sh "${mvnCmd} deploy \
+			-DskipTests=true \
+			-DaltDeploymentRepository=https://nexus3-registry.gpte-hw-cicd.svc.cluster.local:5000/repository/releases
+		"""
       }
 
       // Build the OpenShift Image in OpenShift and tag it.
