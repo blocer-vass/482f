@@ -45,6 +45,13 @@ podTemplate(
       def app='tasks'
       def appWar='openshift-tasks.war'
  
+      //credentials
+      def nexus_id= credentials('admin')
+      def nexus_pass= credentials('redhat')
+
+      //REGISTRY
+      def registry_local='docker-registry.default.svc:5000'
+      def registry_nexus='https://nexus3-registry.gpte-hw-cicd.svc.cluster.local:5000'
 
       // Using Maven build the war file
       // Do not run tests in this step
@@ -145,9 +152,19 @@ podTemplate(
       stage('Copy Image to Nexus container registry') {
         echo "Copy image to Nexus container registry"
 
-        // TBD: Copy image to Nexus container registry
 
+	// TBD: Copy image to Nexus container registry
+	sh """
+		skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds=openshift:$(oc whoami -t) --dest-creds=${nexus_id}:${nexus_pass} \
+		docker://${registry_local}/${devProject}/${app}:${devTag} \
+		docker://$(registry_nexus}/${app}:${devTag}
+	"""
         // TBD: Tag the built image with the production tag.
+	openshift.withCluster(){
+                openshift.withProject(devProject){
+			openshift.tag(devProject+'/'+app+':'+devTag , prodProject+'/'+app+':'+prodTag)
+		}
+	}
       }
 
       // Blue/Green Deployment into Production
