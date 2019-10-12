@@ -129,8 +129,8 @@ podTemplate(
 		openshift.withProject(devProject){
 			//Set image & version
 			openshift.set('image', 'dc/'+app, app+'=docker-registry.default.svc:5000/'+devProject+'/'+app+':'+devTag)
-			openshift.selector('configmap', destApp+'-config').delete()
-			configmap = openshift.create('configmap',destApp+'-config', '--from-file=./configuration/application-users.properties', '--from-file=./configuration/application-roles.properties' )
+			openshift.selector('configmap', app+'-config').delete()
+			configmap = openshift.create('configmap',app+'-config', '--from-file=./configuration/application-users.properties', '--from-file=./configuration/application-roles.properties' )
 			//deploy the image
 			openshift.selector('dc',app).rollout().latest()
 			//control the application is running
