@@ -170,7 +170,7 @@ podTemplate(
 
       // Blue/Green Deployment into Production
       // -------------------------------------
-      def destApp   = app+'-green"
+      def destApp   = app+'-green'
       def activeApp = ""
 
       stage('Blue/Green Production Deployment') {
