@@ -128,14 +128,15 @@ podTemplate(
 			//control the application is running
 			dc=openshift.selector('dc',app).object()
 			dc_version = dc.status.latestVersion
-			rc = openshift.selector('rc', app+'-${dc_version}').object()
+			rc = openshift.selector('rc', app+'-${dc_version}')
 				
-			echo "Waiting for ReplicationController ${app}-${dc_version} to be ready"
-			while (rc.spec.replicas != rc.status.readyReplicas) {
-				sleep 5
-  				rc = openshift.selector('rc', app+'-${dc_version}').object()
-  			}
-			
+			echo "Waiting 10 minutes for ReplicationController ${app}-${dc_version} to be ready"
+			timeout (time: 10, unit: 'MINUTES') {
+                        	rc.untilEach(1){
+                                    def rcMap = it.object()
+                                    return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
+				}
+			}
 		}
 	}
       }
