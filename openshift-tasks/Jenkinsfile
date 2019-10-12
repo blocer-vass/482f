@@ -215,7 +215,7 @@ podTemplate(
         // TBD: Execute switch
 	openshift.withCluster() {
         	openshift.withProject(prodProject) {
-          		route = openshift.selector('route/'app).object()
+          		route = openshift.selector('route/'+app).object()
           		route.spec.to.name=destApp
           		openshift.apply(route)
 		}
