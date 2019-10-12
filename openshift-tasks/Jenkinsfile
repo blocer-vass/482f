@@ -212,6 +212,13 @@ podTemplate(
       stage('Switch over to new Version') {
         echo "Switching Production application to ${destApp}."
         // TBD: Execute switch
+	openshift.withCluster() {
+        	openshift.withProject(prodProject) {
+          		route = openshift.selector('route/'app).object()
+          		route.spec.to.name=destApp
+          		openshift.apply(route)
+		}
+	}
       }
     }
   }
