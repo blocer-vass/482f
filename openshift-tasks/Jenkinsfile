@@ -169,7 +169,7 @@ podTemplate(
 
       // Blue/Green Deployment into Production
       // -------------------------------------
-      def destApp   = "tasks-green"
+      def destApp   = app+'-green"
       def activeApp = ""
 
       stage('Blue/Green Production Deployment') {
@@ -177,8 +177,38 @@ podTemplate(
         //      Set Image, Set VERSION
         //      Deploy into the other application
         //      Make sure the application is running and ready before proceeding
-      }
+	
+	openshift.withCluster() {
+        	openshift.withProject(prodProject) {
+          		activeApp = openshift.selector('route', app).object().spec.to.name
+          		if (activeApp == app+'-green') {
+            			destApp = app+'-blue'
+          		}
+			
+			dc = openshift.selector('dc/'+destApp).object()
+			
+			dc.spec.template.spec.containers[0].image=registry_local+'/'+devProject+'/'+app+':'+prodTag
 
+          		openshift.apply(dc)
+			
+			openshift.selector('dc', destApp).rollout().latest();
+
+			//control the application is running
+                        dc=openshift.selector('dc',destApp).object()
+                        dc_version = dc.status.latestVersion
+                        rc = openshift.selector('rc', destApp+'-${dc_version}')
+
+                        echo "Waiting 10 minutes for ReplicationController ${app}-${dc_version} to be ready"
+                        timeout (time: 10, unit: 'MINUTES') {
+                                rc.untilEach(1){
+                                    def rcMap = it.object()
+                                    return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
+                                }
+                        }
+
+      		}
+	}
+      }
       stage('Switch over to new Version') {
         echo "Switching Production application to ${destApp}."
         // TBD: Execute switch
