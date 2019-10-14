@@ -189,7 +189,7 @@ podTemplate(
 			dc.spec.template.spec.containers[0].image='docker-registry.default.svc:5000/'+prodProject+'/'+app+':'+prodTag
           		openshift.apply(dc)
 
-			openshift.set('env', 'dc/'+destApp, 'VERSION='+prodTag+' (tasks-prod)')
+			openshift.set('env', 'dc/'+destApp, 'VERSION="'+prodTag+' (tasks-prod)"')
 			
 			openshift.selector('configmap', destApp+'-config').delete()
                         configmap = openshift.create('configmap',destApp+'-config', '--from-file=./configuration/application-users.properties', '--from-file=./configuration/application-roles.properties' )
