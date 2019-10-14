@@ -122,7 +122,7 @@ podTemplate(
 		openshift.withProject(devProject){
 			//Set image & version
 			openshift.set('image', 'dc/'+app, app+'=docker-registry.default.svc:5000/'+devProject+'/'+app+':'+devTag)
-			openshift.set('env', 'dc/'+app, 'VERSION='+devTag)
+			openshift.set('env', 'dc/'+app, 'VERSION='+devTag+' (tasks-dev)')
 			
 			openshift.selector('configmap', app+'-config').delete()
 			configmap = openshift.create('configmap',app+'-config', '--from-file=./configuration/application-users.properties', '--from-file=./configuration/application-roles.properties' )
@@ -189,7 +189,7 @@ podTemplate(
 			dc.spec.template.spec.containers[0].image='docker-registry.default.svc:5000/'+prodProject+'/'+app+':'+prodTag
           		openshift.apply(dc)
 
-			openshift.set('env', 'dc/'+destApp, 'VERSION='+prodTag)
+			openshift.set('env', 'dc/'+destApp, 'VERSION='+prodTag+' (tasks-prod)')
 			
 			openshift.selector('configmap', destApp+'-config').delete()
                         configmap = openshift.create('configmap',destApp+'-config', '--from-file=./configuration/application-users.properties', '--from-file=./configuration/application-roles.properties' )
