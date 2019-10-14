@@ -188,6 +188,8 @@ podTemplate(
 			dc = openshift.selector('dc/'+destApp).object()
 			dc.spec.template.spec.containers[0].image='docker-registry.default.svc:5000/'+prodProject+'/'+app+':'+prodTag
           		openshift.apply(dc)
+
+			openshift.set('env', 'dc/'+destApp, 'VERSION='+prodTag)
 			
 			openshift.selector('configmap', destApp+'-config').delete()
                         configmap = openshift.create('configmap',destApp+'-config', '--from-file=./configuration/application-users.properties', '--from-file=./configuration/application-roles.properties' )
@@ -201,7 +203,7 @@ podTemplate(
                         dc_version = dc.status.latestVersion
                         rc = openshift.selector('rc', destApp+'-${dc_version}')
 
-                        echo "Waiting 10 minutes for ReplicationController ${app}-${dc_version} to be ready"
+                        echo "Waiting 10 minutes for ReplicationController ${destApp}-${dc_version} to be ready"
                         timeout (time: 10, unit: 'MINUTES') {
                                 rc.untilEach(1){
                                     def rcMap = it.object()
