@@ -201,13 +201,13 @@ podTemplate(
 			//control the application is running
                         dc=openshift.selector('dc',destApp).object()
                         dc_version = dc.status.latestVersion
-                        rc = openshift.selector('rc', destApp+'-${dc_version}')
+                        rc_prod = openshift.selector('rc', destApp+'-'+dc_version)
 
                         echo "Waiting 10 minutes for ReplicationController ${destApp}-${dc_version} to be ready"
                         timeout (time: 10, unit: 'MINUTES') {
-                                rc.untilEach(1){
-                                    def rcMap = it.object()
-                                    return (rcMap.status.replicas.equals(rcMap.status.readyReplicas))
+                                rc_prod.untilEach(1){
+                                    rcMap_prod = it.object()
+                                    return (rcMap_prod.status.replicas.equals(rcMap_prod.status.readyReplicas))
                                 }
                         }
 
